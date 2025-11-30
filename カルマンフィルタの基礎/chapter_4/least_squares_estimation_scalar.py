@@ -69,21 +69,20 @@ def run_scalar_least_squares():
     # 更新則を適用
     x_hat = x_bar + alpha_opt * pred_error
 
+    # --- Step 3: 推定分散 σ^2 を計算する ---
+    # [式(4.16)]
+    # 事後推定誤差分散 sigma_hat_2
+    #   1/sigma^2 = 1/sigma_x^2 + c^2/sigma_w^2 (精度の加算)
+    #       教科書ではこれを変形して以下のように求めている
+    sigma_hat_2 = 1.0 / ((1.0 / sigma_x_2) + (c**2 / sigma_w_2))
+
     print(f"事前知識 (x_bar)  : {x_bar:.4f} | 予測誤差: {abs(x_bar - x_true)}")
     print(f"推定値 (x_hat)    : {x_hat:.4f} | 予測誤差: {abs(x_hat - x_true)}")
     print("-" * 30)
-
-    # ---------------------------------------------------------
-    # 4. 事後評価：不確実性は減ったか？ (Posterior Variance)
-    # ---------------------------------------------------------
-
-    # [式(4.16)]
-    # 事後推定誤差分散 sigma_hat_2
-    sigma_hat_2 = 1.0 / ((1.0 / sigma_x_2) + (c**2 / sigma_w_2))
-
     print(f"事前の不確実性 (sigma_x^2): {sigma_x_2:.4f}")
     print(f"事後の不確実性 (sigma^2)  : {sigma_hat_2:.4f}")
 
+    # メモ: 自信（分散）は必ず改善するが，予測値（平均）が良くなるとは限らない．
 
 if __name__ == "__main__":
     run_scalar_least_squares()
