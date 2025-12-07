@@ -30,7 +30,7 @@ class ScalarKalmanFilter:
         # カルマンゲインの履歴
         self.K_log = []
 
-    def step(self, y, u):
+    def step(self, y):
         """
         1ステップ分のカルマンフィルタ演算を行う
         y: 観測値 (Observation)
@@ -39,10 +39,9 @@ class ScalarKalmanFilter:
         """
 
         # --- [STEP 1: 時間更新 (Time Update / Prediction)] ---
-        u_arr = np.atleast_2d(np.asarray(u, dtype=float))
 
         # 事前推定値 (x_minus) を計算
-        x_minus = self.A @ self.x + self.B @ u_arr
+        x_minus = self.A @ self.x
 
         # 事前誤差共分散 (P_minus) を計算
         #   ダイナミクスA と，プロセスノイズQ により不確実性が増大する
@@ -124,7 +123,7 @@ x_minus_history[0] = x_0
 
 # フィルタリングループ
 for k in range(1, N):
-    x_hat, P_hat, x_minus = kf.step(y_obs[k], u)
+    x_hat, P_hat, x_minus = kf.step(y_obs[k])
     x_minus_history[k] = x_minus  # 事前推定値（更新前の状態）
     x_est[k] = x_hat  # 事後推定値
     P_history[k] = P_hat  # 事後共分散
