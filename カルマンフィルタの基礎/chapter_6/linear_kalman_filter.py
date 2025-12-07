@@ -41,7 +41,7 @@ class LinearKalmanFilter:
 
         # 観測更新
         S = self.C @ P_minus @ self.C.T + self.R
-        K = (P_minus @ self.C) @ np.linalg.inv(S)
+        K = (P_minus @ self.C.T) @ np.linalg.inv(S)  # カルマンゲイン
         self.K_log.append(K.squeeze())
 
         innovation = y_arr - self.C @ x_minus
