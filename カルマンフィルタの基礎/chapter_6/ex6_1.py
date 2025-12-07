@@ -3,74 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
-
-
-class ScalarKalmanFilter:
-    def __init__(
-        self,
-        A,
-        B,
-        C,
-        Q,  # プロセスノイズの分散
-        R,  # 観測ノイズの分散
-        P_init,
-        x_init,
-    ):
-        # numpy配列に統一（スカラで来ても2次元配列にする）
-        self.A = np.atleast_2d(np.asarray(A, dtype=float))
-        self.B = np.atleast_2d(np.asarray(B, dtype=float))
-        self.C = np.atleast_2d(np.asarray(C, dtype=float))
-        self.Q = np.atleast_2d(np.asarray(Q, dtype=float))
-        self.R = np.atleast_2d(np.asarray(R, dtype=float))
-
-        # 行列・スカラをメンバ変数として保持
-        self.P = np.atleast_2d(np.asarray(P_init, dtype=float))  # 事後誤差共分散
-        self.x = np.atleast_2d(np.asarray(x_init, dtype=float))  # 事後推定値
-
-        # カルマンゲインの履歴
-        self.K_log = []
-
-    def step(self, y):
-        """
-        1ステップ分のカルマンフィルタ演算を行う
-        y: 観測値 (Observation)
-        u: 入力 (Input)
-        return: 更新後の推定値 x, 共分散 P, 事前推定値 x_minus
-        """
-
-        # --- [STEP 1: 時間更新 (Time Update / Prediction)] ---
-
-        # 事前推定値 (x_minus) を計算
-        x_minus = self.A @ self.x
-
-        # 事前誤差共分散 (P_minus) を計算
-        #   ダイナミクスA と，プロセスノイズQ により不確実性が増大する
-        #   Bが掛かるのは足立本の流派．よく見る式では只のQ．
-        P_minus = self.A @ self.P @ self.A.T + self.B @ self.Q @ self.B.T
-
-        # --- [STEP 2: 観測更新 (Measurement Update / Correction)] ---
-        # カルマンゲイン (K) を計算
-        # ヒント: 分母は (C * P_minus * C + R) です。逆行列(割り算)の扱いに注意。
-        # K = ...
-        y_arr = np.atleast_2d(np.asarray(y, dtype=float))
-        S = self.C @ P_minus @ self.C.T + self.R
-        K = (P_minus @ self.C) @ np.linalg.inv(S)
-
-        # ログ保存
-        self.K_log.append(K.squeeze())
-
-        # イノベーション（観測残差）を計算
-        innovation = y_arr - self.C @ x_minus
-
-        # 事後推定値 (self.x) を更新
-        # ヒント: 予測値 + ゲイン * 誤差
-        self.x = x_minus + K * innovation
-
-        # 事後誤差共分散 (self.x) を更新
-        # ヒント: (1 - KC)P_minus の形です
-        self.P = (np.eye(K.shape[0]) - K @ self.C) @ P_minus
-
-        return self.x.squeeze(), self.P.squeeze(), x_minus.squeeze()
+from linear_kalman_filter import LinearKalmanFilter
 
 
 # ==========================================
@@ -89,7 +22,7 @@ u = 0  # 入力は今回0とする => 正規白色雑音
 
 # 真のシステムのデータ生成 (Generative Process)
 np.random.seed(42)  # 再現性のため
-v = np.random.normal(0, np.sqrt(Q), N)  # システムノイズ
+v = np.random.normal(0, np.sqrt(Q), N)  # プロセスノイズ
 w = np.random.normal(0, np.sqrt(R), N)  # 観測ノイズ
 
 x_true = np.zeros(N)
@@ -111,7 +44,7 @@ for k in range(1, N):
 P_0 = 0.0  # 初期共分散
 x_0 = 0.0  # 初期推定値
 
-kf = ScalarKalmanFilter(A, B, C, Q, R, P_0, x_0)
+kf = LinearKalmanFilter(A, B, C, Q, R, P_0, x_0)
 
 # 結果保存用
 x_est = np.zeros(N)
