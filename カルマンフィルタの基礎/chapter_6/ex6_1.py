@@ -35,13 +35,14 @@ class ScalarKalmanFilter:
         1ステップ分のカルマンフィルタ演算を行う
         y: 観測値 (Observation)
         u: 入力 (Input)
-        return: 更新後の推定値 x, 共分散 P
+        return: 更新後の推定値 x, 共分散 P, 事前推定値 x_minus
         """
 
         # --- [STEP 1: 時間更新 (Time Update / Prediction)] ---
+        u_arr = np.atleast_2d(np.asarray(u, dtype=float))
 
         # 事前推定値 (x_minus) を計算
-        x_minus = self.A @ self.x
+        x_minus = self.A @ self.x + self.B @ u_arr
 
         # 事前誤差共分散 (P_minus) を計算
         #   ダイナミクスA と，プロセスノイズQ により不確実性が増大する
@@ -70,7 +71,7 @@ class ScalarKalmanFilter:
         # ヒント: (1 - KC)P_minus の形です
         self.P = (np.eye(K.shape[0]) - K @ self.C) @ P_minus
 
-        return self.x.squeeze(), self.P.squeeze()
+        return self.x.squeeze(), self.P.squeeze(), x_minus.squeeze()
 
 
 # ==========================================
@@ -84,7 +85,7 @@ Q = 1.0  # プロセスノイズの分散
 R = 10.0  # 観測ノイズの分散
 
 # シミュレーション設定
-N = 300  # ステップ数
+N = 150  # ステップ数
 u = 0  # 入力は今回0とする => 正規白色雑音
 
 # 真のシステムのデータ生成 (Generative Process)
@@ -116,14 +117,17 @@ kf = ScalarKalmanFilter(A, B, C, Q, R, P_0, x_0)
 # 結果保存用
 x_est = np.zeros(N)
 P_history = np.zeros(N)
+x_minus_history = np.zeros(N)
 x_est[0] = x_0
 P_history[0] = P_0
+x_minus_history[0] = x_0
 
 # フィルタリングループ
 for k in range(1, N):
-    x_hat, P_hat = kf.step(y_obs[k], u)
-    x_est[k] = x_hat
-    P_history[k] = P_hat
+    x_hat, P_hat, x_minus = kf.step(y_obs[k], u)
+    x_minus_history[k] = x_minus  # 事前推定値（更新前の状態）
+    x_est[k] = x_hat  # 事後推定値
+    P_history[k] = P_hat  # 事後共分散
 
 # ==========================================
 # 4. 可視化
@@ -133,6 +137,9 @@ plt.figure(figsize=(12, 8))
 # 状態推定のプロット
 plt.subplot(2, 1, 1)
 plt.plot(x_true, "k-", label="True State (x)", alpha=0.6)  # 真値
+plt.plot(
+    x_minus_history, "b.", markersize=3, alpha=0.6, label="Prior (x_minus)"
+)  # 事前推定値
 plt.plot(y_obs, "g.", label="Observation (y)", alpha=0.8, markersize=3)  # 観測値
 plt.plot(x_est, "r--", label="KF Estimate (x_hat)")  # 推定値
 
@@ -154,7 +161,7 @@ plt.grid()
 
 # カルマンゲインの推移
 plt.subplot(2, 1, 2)
-plt.plot(kf.K_log, "b-")
+plt.plot(kf.K_log, "r-")
 plt.title("Kalman Gain Evolution")
 plt.xlabel("Step")
 plt.ylabel("Gain K")
