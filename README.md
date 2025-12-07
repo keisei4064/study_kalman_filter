@@ -13,3 +13,7 @@
 ### 例題6.3 : 2次系の状態推定
 
 ![Example 6.3 Plot](./カルマンフィルタの基礎/chapter_6/ex6_3_plot.png)
+
+### 例題6.4 : 制御入力uあり
+
+![Example 6.4 Plot](./カルマンフィルタの基礎/chapter_6/ex6_4_plot.png)

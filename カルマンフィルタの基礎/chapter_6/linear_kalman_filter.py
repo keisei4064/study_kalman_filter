@@ -1,4 +1,5 @@
 import numpy as np
+import typing
 
 
 class LinearKalmanFilter:
@@ -11,6 +12,7 @@ class LinearKalmanFilter:
         R,
         P_init,
         x_init,
+        B_u=None,
     ):
         """
         線形カルマンフィルタ
@@ -18,6 +20,11 @@ class LinearKalmanFilter:
         # スカラが渡っても行列計算できるように 2 次元配列へ正規化する
         self.A = np.atleast_2d(np.asarray(A, dtype=float))
         self.B = np.atleast_2d(np.asarray(B, dtype=float))
+        # 制御入力用の B_u（未指定ならゼロ行列で無効化）
+        if B_u is None:
+            self.B_u = np.zeros((self.A.shape[0], 1))
+        else:
+            self.B_u = np.atleast_2d(np.asarray(B_u, dtype=float))
         self.C = np.atleast_2d(np.asarray(C, dtype=float))
         self.Q = np.atleast_2d(np.asarray(Q, dtype=float))  # プロセスノイズ共分散
         self.R = np.atleast_2d(np.asarray(R, dtype=float))  # 観測ノイズ共分散
@@ -27,16 +34,23 @@ class LinearKalmanFilter:
 
         self.K_log = []
 
-    def step(self, y):
+    def step(self, y, u=None):
         """
         1 ステップのカルマンフィルタ更新を行う。
         y: 観測値
+        u: 制御入力
         return: 事後推定値 x, 共分散 P, 事前推定値 x_minus
         """
-        y_arr = np.atleast_2d(np.asarray(y, dtype=float))
+        y_vec = np.atleast_2d(np.asarray(y, dtype=float))
+
+        # 入力 u の処理
+        if u is None:
+            u_vec = np.zeros((self.B_u.shape[1], 1))
+        else:
+            u_vec = np.atleast_2d(np.asarray(u, dtype=float))
 
         # 時間更新（事前推定）
-        x_minus = self.A @ self.x
+        x_minus = self.A @ self.x + self.B_u @ u_vec
         P_minus = self.A @ self.P @ self.A.T + self.B @ self.Q @ self.B.T
 
         # 観測更新
@@ -44,7 +58,7 @@ class LinearKalmanFilter:
         K = (P_minus @ self.C.T) @ np.linalg.inv(S)  # カルマンゲイン
         self.K_log.append(K.squeeze())
 
-        innovation = y_arr - self.C @ x_minus
+        innovation = y_vec - self.C @ x_minus
         self.x = x_minus + K @ innovation
         self.P = (np.eye(self.A.shape[0]) - K @ self.C) @ P_minus
 
