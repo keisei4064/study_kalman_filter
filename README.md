@@ -9,3 +9,7 @@
 ### 例題6.1 : ウィナー過程（ブラウン運動）
 
 ![Example 6.1 Plot](./カルマンフィルタの基礎/chapter_6/ex6_1_plot.png)
+
+### 例題6.3 : 2次系の状態推定
+
+![Example 6.3 Plot](./カルマンフィルタの基礎/chapter_6/ex6_3_plot.png)

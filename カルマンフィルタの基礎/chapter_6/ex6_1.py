@@ -93,7 +93,7 @@ plt.grid()
 
 # カルマンゲインの推移
 plt.subplot(2, 1, 2)
-plt.plot(kf.K_log, "r-")
+plt.plot(kf.K_log, "m-")
 plt.title("Kalman Gain Evolution")
 plt.xlabel("Step")
 plt.ylabel("Gain K")
