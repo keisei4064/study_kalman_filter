@@ -1,3 +1,5 @@
+# 時変なカルマンゲインが定常カルマンゲインへ収束することを確認
+
 import numpy as np
 import scipy.linalg
 import matplotlib.pyplot as plt

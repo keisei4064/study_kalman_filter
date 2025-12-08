@@ -21,3 +21,7 @@
 ### 定常カルマンゲインへの収束
 
 ![Steady State Kalman Gain](./カルマンフィルタの基礎/chapter_6/steady_state_kalman_gain_plot.png)
+
+### 通常のカルマンフィルタと定常カルマンフィルタの比較（制御入力u付き）
+
+![Steady State Kalman Filter](./カルマンフィルタの基礎/chapter_6/steady_state_kalman_filter_plot.png)
