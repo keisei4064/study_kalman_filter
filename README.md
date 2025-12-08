@@ -17,3 +17,7 @@
 ### 例題6.4 : 制御入力uあり
 
 ![Example 6.4 Plot](./カルマンフィルタの基礎/chapter_6/ex6_4_plot.png)
+
+### 定常カルマンゲインへの収束
+
+![Steady State Kalman Gain](./カルマンフィルタの基礎/chapter_6/steady_state_kalman_gain_plot.png)
